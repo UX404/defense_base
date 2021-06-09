@@ -8,7 +8,7 @@ import torchvision
 import torch.optim as optim
 from torchvision import datasets, transforms
 from pgd_attack import pgd_attack
-from models import ResNet18
+from models import Gumbel_ResNet50, Gumbel_ResNet34
 from tqdm import tqdm, trange
 
 from attack_main import eval_model_pgd
@@ -101,14 +101,14 @@ if __name__=="__main__":
     os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu_id
     gpu_num = max(len(args.gpu_id.split(',')), 1)
 
-    model_name = 'resnet18'
+    model_name = 'gumbel_resnet50'
     log_dir = "logs/%s_%s" % (time.strftime("%b%d-%H%M", time.localtime()), model_name)
     check_mkdir(log_dir)
     log = Logger(log_dir+'/train.log')
     log.print(args)
 
     device = torch.device('cuda')
-    model = ResNet18().to(device)    
+    model = Gumbel_ResNet34().to(device)    
     model = nn.DataParallel(model, device_ids=[i for i in range(gpu_num)])
 
     train_loader, test_loader = prepare_cifar(args.batch_size, args.test_batch_size)
