@@ -8,7 +8,7 @@ import torchvision
 import torch.optim as optim
 from torchvision import datasets, transforms
 from pgd_attack import pgd_attack
-from models import Gumbel_ResNet50, Gumbel_ResNet34
+from models import Random_ResNet50, Random_ResNet34, Randomfront
 from tqdm import tqdm, trange
 
 from attack_main import eval_model_pgd
@@ -30,6 +30,8 @@ def parse_args():
                     help='iterations for pgd attack (default pgd20)')
     parser.add_argument('--epsilon', type=float, default=8./255.,
                     help='max distance for pgd attack (default epsilon=8/255)')
+    parser.add_argument('--lmbd', type=float, default=0.01,
+                    help='value of the regularization coefficient (default lmbd=0.01)')
     parser.add_argument('--lr', type=float, default=0.1,
                     help='iterations for pgd attack (default pgd20)')
     #parser.add_argument('--lr_steps', type=str, default=,
@@ -43,7 +45,7 @@ def parse_args():
     parser.add_argument('--adv_train', type=int, default=1,
                     help='If use adversarial training')  
     #parser.add_argument('--model_path', type=str, default="./models/model-wideres-pgdHE-wide10.pt")
-    parser.add_argument('--gpu_id', type=str, default="0")
+    parser.add_argument('--gpu_id', type=str, default="0, 1")
     return parser.parse_args()
 
 
@@ -60,9 +62,17 @@ def train_adv_epoch(model, args, train_loader, device, optimizer, epoch):
             optimizer.zero_grad()
             x_adv = pgd_attack(model, x, y, args.step_size, args.epsilon, args.perturb_steps,
                     random_start=0.001, distance='l_inf')
+            x_adv.requires_grad_()
             model.train()
             output_adv = model(x_adv)
             loss = nn.CrossEntropyLoss()(output_adv, y)
+            #---------------Perturbation-based_Regularization---------------
+            lmbd = args.lmbd
+            grad = torch.autograd.grad(loss, [x_adv], retain_graph=True)[0]
+            grad_norm = torch.norm(grad.view(grad.shape[0], -1), dim=1)
+            x_adv_norm = torch.norm(x_adv.view(x_adv.shape[0], -1), dim=1)
+            loss += lmbd * torch.exp(- grad_norm / x_adv_norm).sum()
+            #---------------------------------------------------------------
             loss.backward()
             optimizer.step()
             loss_sum += loss.item()
@@ -101,14 +111,14 @@ if __name__=="__main__":
     os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu_id
     gpu_num = max(len(args.gpu_id.split(',')), 1)
 
-    model_name = 'gumbel_resnet50'
+    model_name = 'regu0.01_random_res34'
     log_dir = "logs/%s_%s" % (time.strftime("%b%d-%H%M", time.localtime()), model_name)
     check_mkdir(log_dir)
     log = Logger(log_dir+'/train.log')
     log.print(args)
 
     device = torch.device('cuda')
-    model = Gumbel_ResNet34().to(device)    
+    model = Random_ResNet34().to(device)    
     model = nn.DataParallel(model, device_ids=[i for i in range(gpu_num)])
 
     train_loader, test_loader = prepare_cifar(args.batch_size, args.test_batch_size)

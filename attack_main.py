@@ -25,7 +25,7 @@ def parse_args():
                     help='iterations for pgd attack (default pgd20)')
     parser.add_argument('--model_name', type=str, default="")
     parser.add_argument('--model_path', type=str, default="./models/weights/model-wideres-pgdHE-wide10.pt")
-    parser.add_argument('--gpu_id', type=str, default="0")
+    parser.add_argument('--gpu_id', type=str, default="0, 1")
     return parser.parse_args()
 
 

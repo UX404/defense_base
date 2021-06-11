@@ -8,5 +8,10 @@ model4 Natural Acc: 0.84920, Robust acc: 0.56180, distance:0.03137
 model5 Natural Acc: 0.81430, Robust acc: 0.54820, distance:0.03137
 model6 Natural Acc: 0.88250, Robust acc: 0.64340, distance:0.03137
 
+
 python attack_main.py --model_path=./models/weights/wideres34-10-pgdHE.pt
-wideres34-10-pgdHE.pt Natural Acc: 0.81430, Robust acc: 0.54820, distance:0.03137
+wideres34-10-pgdHE.pt       Natural Acc: 0.81430, Robust acc: 0.54820, distance:0.03137
+
+
+python pgd_train.py
+resnet18        Epoch:99, loss:0.58211, train_acc:0.9578, train_robust_acc:0.7627,  test_acc:0.8667, test_robust_acc:0.5081, best_robust_acc:0.5347 in epoch 77.

@@ -55,7 +55,7 @@ def eval_model_pgd(model,  test_loader, device, step_size, epsilon, perturb_step
     distance = torch.cat(distance).max()
     return natural_acc, robust_acc, distance
 
-def eval_model_with_attack(model,  test_loader,attack, device):
+def eval_model_with_attack(model, test_loader, attack, device):
     correct_adv, correct = [], []
     distance = []
     num = 0

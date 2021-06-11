@@ -1,4 +1,4 @@
-from models import WideResNet, ResNet18, ResNet34, SmallResNet, WideResNet28, WideResNet34, Gumbel_ResNet34, Gumbel_ResNet50
+from models import WideResNet, ResNet18, ResNet34, SmallResNet, WideResNet28, WideResNet34
 import torch
 
 def filter_state_dict(state_dict):
